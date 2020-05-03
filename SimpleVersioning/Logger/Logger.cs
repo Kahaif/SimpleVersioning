@@ -28,7 +28,7 @@ namespace SimpleVersioning.Logger
         {
             if (!IsEnabled(logLevel)) return;
 
-            configuration.Callback?.Invoke($"{DateTime.Now} - {logLevel} - {eventId.Id.ToString()} - {name} - {formatter(state, exception)}");
+            configuration.Callback?.Invoke($"{DateTime.Now} - {logLevel} - {eventId.Id} - {name} - {formatter(state, exception)}");
         }
     }
 }
