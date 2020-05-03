@@ -1,5 +1,3 @@
-using System;
-
 namespace SimpleVersioning.Models
 {
     public class ErrorViewModel
