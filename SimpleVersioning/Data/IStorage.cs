@@ -1,6 +1,7 @@
 ﻿using SimpleVersioning.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SimpleVersioning.Data
 {
@@ -9,11 +10,13 @@ namespace SimpleVersioning.Data
     /// </summary>
     interface IStorage
     {
-        public File GetFile(int ID);
-        public IEnumerable<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "");
-        public IEnumerable<Configuration> GetConfigurations();
-        public Configuration GetConfiguration(string name);
-        public Configuration GetConfiguration(object value);
-        public Configuration GetConfiguration(int id);
+        public Task<File> GetFileAsync(int ID);
+        public Task<IEnumerable<File>> GetFilesAsync(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "");
+        public Task<IEnumerable<File>> GetFilesAsync(string name = "", string minVersion = "", string maxVersion = "");
+        public Task<IEnumerable<File>> GetFilesAsync(List<Tuple<string, string>> propertyAndConditions);
+        public Task<IEnumerable<Configuration>> GetConfigurationsAsync();
+        public Task<Configuration> GetConfigurationAsync(string name);
+        public Task<IEnumerable<Configuration>> GetConfigurationsAsync(object value);
+        public Task<Configuration> GetConfigurationAsync(int id);
     }
 }

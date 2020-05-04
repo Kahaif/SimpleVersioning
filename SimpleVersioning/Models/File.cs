@@ -6,7 +6,7 @@ namespace SimpleVersioning.Models
     /// <summary>
     /// Represents a file in the storage system.
     /// </summary>
-    public class FileModel
+    public class File
     {
         public int ID { get; set; }
         public string Name { get; set; }

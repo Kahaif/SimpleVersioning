@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a configuration in the storage system.
     /// </summary>
-    public class ConfigurationModel
+    public class Configuration
     {
         public string Name { get; set; }
         public object Value { get; set; }
