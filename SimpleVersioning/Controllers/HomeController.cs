@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SimpleVersioning.Data.SQLServer;
 using SimpleVersioning.Models;
 using System.Diagnostics;
 
@@ -9,9 +10,10 @@ namespace SimpleVersioning.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, SqlServerContext context)
         {
             _logger = logger;
+            context.Configurations.Add(new Configuration() { Name = "abc", Value = "abc" });
         }
 
         public IActionResult Index()

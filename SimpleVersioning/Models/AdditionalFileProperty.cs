@@ -1,9 +1,6 @@
 ﻿namespace SimpleVersioning.Models
 {
-    /// <summary>
-    /// Represents a configuration in the storage system.
-    /// </summary>
-    public class Configuration
+    public class AdditionalFileProperty
     {
         public int Id { get; set; }
         public string Name { get; set; }

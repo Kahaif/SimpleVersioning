@@ -8,13 +8,13 @@ namespace SimpleVersioning.Models
     /// </summary>
     public class File
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Hash { get; set; }
         public DateTime CreationTime { get; set; }
         public DateTime LastUpdatedTime { get; set; }
-        public Version Version { get; set; }
-        public Dictionary<string, string> Properties { get; set; }
+        public string Version { get; set; }
+        public List<AdditionalFileProperty> Properties { get; set; }
         public string FileType { get; set; }
     }
 }
