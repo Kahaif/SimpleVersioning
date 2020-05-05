@@ -14,7 +14,7 @@ namespace SimpleVersioning.Data.SQLServer
     {
         DbContextOptions options;
 
-        public SqlServerStorage(DbContextOptions options)
+        public SQLServerStorage(DbContextOptions options)
         {
             this.options = options;
         }
@@ -178,7 +178,8 @@ namespace SimpleVersioning.Data.SQLServer
             using var context = new SqlServerContext(options);
             try
             {
-                AddFileQuery(context.Files.AsNoTracking(), name, minVersion, maxVersion);
+                var query = context.Files.AsNoTracking();
+                AddFileQuery(query, name, minVersion, maxVersion);
                 return query.ToList();
             }
             catch
