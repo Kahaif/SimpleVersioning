@@ -16,5 +16,6 @@ namespace SimpleVersioning.Models
         public string Version { get; set; }
         public List<AdditionalFileProperty> Properties { get; set; }
         public string FileType { get; set; }
+        public string Path { get; set; }
     }
 }

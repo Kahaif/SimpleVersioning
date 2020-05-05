@@ -1,18 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.Extensions.DependencyInjection;
 using SimpleVersioning.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace SimpleVersioning.Data.SQLServer
 {
     public class SQLServerStorage : IStorage
     {
-        DbContextOptions options;
+        readonly DbContextOptions options;
 
         public SQLServerStorage(DbContextOptions options)
         {
