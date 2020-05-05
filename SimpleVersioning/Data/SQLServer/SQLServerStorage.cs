@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace SimpleVersioning.Data.SQLServer
 {
-    public class SqlServerStorage : IStorage
+    public class SQLServerStorage : IStorage
     {
         DbContextOptions options;
 
-        public SqlServerStorage(DbContextOptions options)
+        public SQLServerStorage(DbContextOptions options)
         {
             this.options = options;
         }
