@@ -14,7 +14,7 @@ namespace SimpleVersioning.Models
         public DateTime CreationTime { get; set; }
         public DateTime LastUpdatedTime { get; set; }
         public string Version { get; set; }
-        public List<AdditionalFileProperty> Properties { get; set; }
+        public List<FileProperty> Properties { get; set; }
         public string FileType { get; set; }
         public string Path { get; set; }
     }
