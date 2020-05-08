@@ -22,7 +22,7 @@ namespace SimpleVersioning
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<SqlServerContext>(optionBuilder => optionBuilder.UseSqlServer(Configuration.GetConnectionString("SimpleVersioning")));
+
             services.AddSingleton<IStorageRepository>(
                 new SqlServerStorageRepository(
                     new DbContextOptionsBuilder<SqlServerContext>().UseSqlServer(Configuration.GetConnectionString("SimpleVersioning")).Options
@@ -55,7 +55,7 @@ namespace SimpleVersioning
            
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            
             app.UseRouting();
 
             app.UseAuthentication();

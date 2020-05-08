@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Testing
 {
@@ -20,7 +19,7 @@ namespace Testing
         public static string GetRandomString(this string str, int length)
         {
             Random r = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[r.Next(s.Length)]).ToArray());
         }
@@ -34,7 +33,7 @@ namespace Testing
                     Name = "".GetRandomString(5),
                     CreationTime = DateTime.Now,
                     LastUpdatedTime = DateTime.Now,
-                    FileType = "json",
+                    Type = "json",
                     Hash = "".GetRandomString(5),
                     Version = "".GetRandomString(2),
                     Properties = new List<FileProperty>()

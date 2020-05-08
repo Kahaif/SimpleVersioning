@@ -86,13 +86,6 @@ namespace SimpleVersioning.Data
         /// <returns>A collection of the asked items</returns>
         public Task<IEnumerable<T>> GetAsync<T>() where T : class;
 
-
-
-
-        /*
-         * 
-  
-        
         /// <summary>
         /// Return all the files which respects the parameters.
         /// </summary>
@@ -113,9 +106,8 @@ namespace SimpleVersioning.Data
         /// <param name="minVersion">Minimum version.</param>
         /// <param name="maxVersion">Maximum version.</param>
         /// <returns>A collection of files.</returns>
-        public List<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "");
+        public List<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = ""); /// <summary>
 
-        /// <summary>
         /// Return all the files which respects the parameters.
         /// </summary>
         /// <param name="from">Minimum creation date.</param>
@@ -135,7 +127,7 @@ namespace SimpleVersioning.Data
         /// <param name="minVersion">Minimum version.</param>
         /// <param name="maxVersion">Maximum version.</param>
         /// <returns>A collection of files.</returns>
-        public List<File> GetFiles(string name = "", string minVersion = "", string maxVersion = "");
+        public List<File> GetFiles(string name = "", string minVersion = "", string maxVersion = ""); 
 
         /// <summary>
         /// Return all the files which respect the conditions of propertyAndConditions.
@@ -164,131 +156,6 @@ namespace SimpleVersioning.Data
         /// \The third item is the value which will be tested with the value of the property.</param>
         /// <returns>A collection of files.</returns>
         public List<File> GetFiles(List<Tuple<string, char, string>> propertyAndConditions);
-        #endregion
 
-        #region GetConfiguration
-
-    /// <summary>
-    /// Retrieve all the configurations asynchronously.
-    /// </summary>
-    /// <returns>An awaitable task which returns a collection of all the configurations.</returns>
-    public Task<List<Configuration>> GetConfigurationsAsync();
-
-    /// <summary>
-    /// Return a collection of all the configurations.
-    /// </summary>
-    /// <returns>A collection of all the configurations.</returns>
-    public List<Configuration> GetConfigurations();
-
-    /// <summary>
-    /// Return the configuration that has the specified name asynchronously.
-    /// </summary>
-    /// <param name="name">Configuration's name.</param>
-    /// <returns>An awaitable task which returns the searched configuration.</returns>
-    public Task<Configuration> GetConfigurationAsync(string name);
-
-    /// <summary>
-    /// Return the configuration that has the specified name.
-    /// </summary>
-    /// <param name="name">Configuration's name.</param>
-    /// <return></return>sThe searched configuration</returns>
-    public Configuration GetConfiguration(string name);
-    #endregion
-
-    #region AddFile
-    /// <summary>
-    /// Asynchronously add a file.
-    /// </summary>
-    /// <param name="file">New file to be added.</param>
-    /// <returns>A task which can be awaited</returns>
-    public Task<bool> AddFileAsync(File file);
-
-    /// <summary>
-    /// Add a file in the storage system .
-    /// </summary>
-    /// <param name="file">File to add</param>
-    public bool AddFile(File file);
-
-    /// <summary>
-    /// Asynchronously a bunch of files in the storage system.
-    /// </summary>
-    /// <param name="files">Collection of files to add</param>
-    public Task<bool> AddFilesAsync(IEnumerable<File> files);
-    /// <summary>
-    /// Add a bunch of files n the storage system.
-    /// </summary>
-    /// <param name="files"></param>
-    public bool AddFiles(IEnumerable<File> files);
-    #endregion
-
-    #region AddConfiguration
-
-    /// <summary>
-    /// Asynchronously add a configuration in the storage system.
-    /// </summary>
-    /// <param name="configuraton">configuration to add.</param>
-    public Task<bool> AddConfigurationAsync(Configuration configuraton);
-
-    /// <summary>
-    /// Add a configuration in the storage system
-    /// </summary>
-    /// <param name="configuration"></param>
-    public bool AddConfiguration(Configuration configuration);
-
-    /// <summary>
-    /// Asynchronously add a collection of configuration in the storage system
-    /// </summary>
-    /// <param name="configurations">Collection of configurations to add</param>
-    public Task<bool> AddConfigurationsAsync(IEnumerable<Configuration> configurations);
-
-    /// <summary>
-    /// Add a collection of configuration in the storage system
-    /// </summary>
-    /// <param name="configurations">Collection of configurations to add</param>
-    public bool AddConfigurations(IEnumerable<Configuration> configurations);
-    #endregion
-
-    #region UpdateFile
-
-    /// <summary>
-    /// Asynchronously update a file with newFile.
-    /// </summary>
-    /// <param name="name">File's name</param>
-    /// <param name="version">File's version</param>
-    /// <param name="newFile">File's new values</param>
-    /// <returns></returns>
-    public Task<bool> UpdateFileAsync(string name, string version, File newFile);
-
-    /// <summary>
-    /// Update a file with newFile.
-    /// </summary>
-    /// <param name="name">File's name</param>
-    /// <param name="version">File's version</param>
-    /// <param name="newFile">File's new values</param>
-    public bool UpdateFile(string name, string version, File newFile);
-
-    #endregion
-
-    #region UpdateConfiguration
-
-
-    /// <summary>
-    /// Asynchronously update a configuration.
-    /// </summary>
-    /// <param name="name">Name of the configuration which will be updated.</param>
-    /// <param name="newValue">New value of the configuration</param>
-    /// <returns></returns>
-    public Task<bool> UpdateConfigurationAsync(string name, string newValue);
-
-    /// <summary>
-    /// Update a configuration.
-    /// </summary>
-    /// <param name="name">Name of the configuration which will be updated.</param>
-    /// <param name="newValue">New value of the configuration.</param>
-    public bool UpdateConfiguration(string name, string newValue);
-
-    #endregion
-
-    */
-    }
+  
 }

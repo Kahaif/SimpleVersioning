@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Testing
 {
+    
     [TestClass]
     public class DbTest
     {
@@ -31,14 +32,6 @@ namespace Testing
         }
 
         [TestMethod]
-        public void AssertAdd()
-        {
-            var files = Helper.GetRandomFiles(1);
-            Assert.IsTrue(storage.Add(files[0]));
-            Assert.ThrowsException<ArgumentNullException>(() => storage.Add<File>(null));
-        }
-
-        [TestMethod]
         public async Task AssertGetAsync()
         {
 
@@ -49,6 +42,15 @@ namespace Testing
             Assert.IsNotNull(await storage.GetAsync<File>(files[0].Id));
             Assert.AreEqual(retrievedFile, files[0]);
         }
+
+        [TestMethod]
+        public void AssertAdd()
+        {
+            var files = Helper.GetRandomFiles(1);
+            Assert.IsTrue(storage.Add(files[0]));
+            Assert.ThrowsException<ArgumentNullException>(() => storage.Add<File>(null));
+        }
+
     
 
         [TestMethod]
@@ -61,6 +63,12 @@ namespace Testing
 
 
         [TestMethod]
+        public void AssertAddRange()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() => storage.AddRange<File>(null));
+            Assert.IsTrue(storage.AddRange(Helper.GetRandomFiles(10)));
+        }
+        [TestMethod]
         public async Task AssertAddRangeAsync()
         {
             Assert.IsTrue(await storage.AddRangeAsync(Helper.GetRandomFiles(10)));
@@ -68,12 +76,6 @@ namespace Testing
         }
 
 
-        [TestMethod]
-        public void  AssertAddRange()
-        {
-            Assert.ThrowsException<ArgumentNullException>(() => storage.AddRange<File>(null));
-            Assert.IsTrue(storage.AddRange(Helper.GetRandomFiles(10)));
-        }
 
         [TestMethod]
         public void AssertUpdate()
