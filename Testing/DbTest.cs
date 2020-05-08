@@ -17,7 +17,7 @@ namespace Testing
         [TestInitialize]
         public void Initialize()
         {
-            storage = new SqlServerStorageRepository(new DbContextOptionsBuilder<SqlServerContext>().UseInMemoryDatabase("test-db").Options);
+            storage = new SqlServerStorageRepository(new DbContextOptionsBuilder<SqlServerContext>().UseSqlServer("Server=(localdb)\\SQLSERVER;Database=SimpleVersioning;Trusted_Connection=True;MultipleActiveResultSets=true;User ID=TestAccess;Password=test_password;").Options);
         }
 
         [TestMethod]
