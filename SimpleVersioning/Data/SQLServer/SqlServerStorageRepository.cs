@@ -145,7 +145,13 @@ namespace SimpleVersioning.Data.SQLServer
             if (id < 1) throw new ArgumentException(nameof(id));
             if (newValues == null) throw new ArgumentNullException(nameof(newValues));
 
-            context.Entry(context.Set<T>().Find(id)).CurrentValues.SetValues(newValues);
+            context.Entry(Get<File>(id)).CurrentValues.SetValues(newValues);
+
+            /*
+            T entity = context.Set<T>().Find(id);
+            entity = newValues;
+            context.Set<T>().Update(entity);*/
+            //context.Entry(context.Set<T>().Find(id)).CurrentValues.SetValues(newValues);
             return context.SaveChanges() > 0;
         }
 
