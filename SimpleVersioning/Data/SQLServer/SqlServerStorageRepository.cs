@@ -10,19 +10,18 @@ namespace SimpleVersioning.Data.SQLServer
     public class SqlServerStorageRepository : IStorageRepository
     {
         readonly DbContextOptions<SqlServerContext> options;
-        private readonly SqlServerContext context;
 
         public SqlServerStorageRepository(DbContextOptions<SqlServerContext> options)
         {
             this.options = options;
-            context = new SqlServerContext(options);
+            Context = new SqlServerContext(options);
         }
 
-        public SqlServerContext Context { get => context; }
+        public SqlServerContext Context { get; }
 
         ~SqlServerStorageRepository()
         {
-            context.Dispose();
+            Context.Dispose();
         }
 
         private void AddFileQuery(IQueryable<File> query, string name, string minVersion, string maxVersion)
@@ -41,25 +40,14 @@ namespace SimpleVersioning.Data.SQLServer
         {
             foreach (var item in propertyAndConditions)
             {
-                switch (item.Item2)
+                query = item.Item2 switch
                 {
-                    case '>':
-                        query = query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) > 0).Count() > 0);
-                        break;
-                    case '<':
-                        query = query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) < 0).Count() > 0);
-                        break;
-                    case '=':
-                        query = query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) == 0).Count() > 0);
-                        break;
-
-                    case '!':
-                        query = query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && prop.Value != item.Item3).Count() > 0);
-                        break;
-
-                    default:
-                        throw new ArgumentNullException(nameof(propertyAndConditions), $"Item2 of property name :  {item.Item1} and value : {item.Item3} incorrect");
-                }
+                    '>' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) > 0).Count() > 0),
+                    '<' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) < 0).Count() > 0),
+                    '=' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) == 0).Count() > 0),
+                    '!' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && prop.Value != item.Item3).Count() > 0),
+                    _ => throw new ArgumentNullException(nameof(propertyAndConditions), $"Item2 of property name :  {item.Item1} and value : {item.Item3} incorrect"),
+                };
             }
         }
 
@@ -69,15 +57,15 @@ namespace SimpleVersioning.Data.SQLServer
         public bool Add<T>(T entity) where T : class
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
-            context.Set<T>().Add(entity);
-            return context.SaveChanges() > 0;
+            Context.Set<T>().Add(entity);
+            return Context.SaveChanges() > 0;
         }
 
         public async Task<bool> AddAsync<T>(T entity) where T : class
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
-            await context.Set<T>().AddAsync(entity);
-            return (await context.SaveChangesAsync()) > 0;
+            await Context.Set<T>().AddAsync(entity);
+            return (await Context.SaveChangesAsync()) > 0;
         }
 
         public bool AddRange<T>(IEnumerable<T> entities) where T : class
@@ -86,8 +74,8 @@ namespace SimpleVersioning.Data.SQLServer
             int count = entities.Count();
             if (count == 0) throw new ArgumentException("can't be empty", nameof(entities));
 
-            context.Set<T>().AddRange(entities);
-            return context.SaveChanges() > 0;
+            Context.Set<T>().AddRange(entities);
+            return Context.SaveChanges() > 0;
         }
 
         public async Task<bool> AddRangeAsync<T>(IEnumerable<T> entities) where T : class
@@ -96,8 +84,8 @@ namespace SimpleVersioning.Data.SQLServer
             int count = entities.Count();
             if (count == 0) throw new ArgumentException("can't be empty", nameof(entities));
 
-            await context.Set<T>().AddRangeAsync(entities);
-            return (await context.SaveChangesAsync()) > 0;
+            await Context.Set<T>().AddRangeAsync(entities);
+            return (await Context.SaveChangesAsync()) > 0;
         }
 
         #endregion
@@ -105,12 +93,12 @@ namespace SimpleVersioning.Data.SQLServer
         #region Generic Get All
         public IEnumerable<T> Get<T>() where T : class
         {
-            return context.Set<T>().ToList();
+            return Context.Set<T>().ToList();
         }
 
         public async Task<IEnumerable<T>> GetAsync<T>() where T : class
         {
-            return await context.Set<T>().ToListAsync();
+            return await Context.Set<T>().ToListAsync();
         }
         #endregion
 
@@ -118,13 +106,13 @@ namespace SimpleVersioning.Data.SQLServer
         public bool Delete<T>(int id) where T : class
         {
             if (id < 1) throw new ArgumentException(nameof(id));
-            return context.Database.ExecuteSqlInterpolated($"DELETE FROM {typeof(T).Name} WHERE Id = {id}") > 0;
+            return Context.Database.ExecuteSqlInterpolated($"DELETE FROM {typeof(T).Name} WHERE Id = {id}") > 0;
         }
 
         public async Task<bool> DeleteAsync<T>(int id) where T : class
         {
             if (id < 1) throw new ArgumentException(nameof(id));
-            return (await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM {typeof(T).Name} WHERE Id = {id}")) > 0;
+            return (await Context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM {typeof(T).Name} WHERE Id = {id}")) > 0;
         }
         #endregion
 
@@ -133,13 +121,13 @@ namespace SimpleVersioning.Data.SQLServer
         {
            if (id < 1) throw new ArgumentNullException(nameof(id));
 
-            return context.Set<T>().Find(id);
+            return Context.Set<T>().Find(id);
         }
 
         public async Task<T> GetAsync<T>(int id) where T : class
         {
             if (id < 1) throw new ArgumentNullException(nameof(id));
-            return await context.Set<T>().FindAsync(id);
+            return await Context.Set<T>().FindAsync(id);
         }
         #endregion
 
@@ -150,14 +138,14 @@ namespace SimpleVersioning.Data.SQLServer
             if (id < 1) throw new ArgumentException(nameof(id));
             if (newValues == null) throw new ArgumentNullException(nameof(newValues));
 
-            context.Entry(Get<File>(id)).CurrentValues.SetValues(newValues);
+            Context.Entry(Get<File>(id)).CurrentValues.SetValues(newValues);
 
             /*
             T entity = context.Set<T>().Find(id);
             entity = newValues;
             context.Set<T>().Update(entity);*/
             //context.Entry(context.Set<T>().Find(id)).CurrentValues.SetValues(newValues);
-            return context.SaveChanges() > 0;
+            return Context.SaveChanges() > 0;
         }
 
         public async Task<bool> UpdateAsync<T>(int id, T newValues) where T : class
@@ -165,11 +153,10 @@ namespace SimpleVersioning.Data.SQLServer
             if (id < 1) throw new ArgumentException(nameof(id));
             if (newValues == null) throw new ArgumentNullException(nameof(newValues));
 
-            context.Entry(await context.Set<T>().FindAsync(id)).CurrentValues.SetValues(newValues);
-            return (await context.SaveChangesAsync()) > 0;
+            Context.Entry(await Context.Set<T>().FindAsync(id)).CurrentValues.SetValues(newValues);
+            return (await Context.SaveChangesAsync()) > 0;
         }
         #endregion
-
 
 
         public List<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "")
@@ -178,7 +165,7 @@ namespace SimpleVersioning.Data.SQLServer
 
             try
             {
-                var query =  context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to);
+                var query =  Context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to);
 
                 AddFileQuery(query, name, minVersion, maxVersion);
 
@@ -190,7 +177,7 @@ namespace SimpleVersioning.Data.SQLServer
             }
             finally
             {
-                context.Dispose();
+                Context.Dispose();
             }
         }
 
@@ -200,7 +187,7 @@ namespace SimpleVersioning.Data.SQLServer
 
             try
             {
-                var query = context.Files;
+                var query = Context.Files;
                 AddFileQuery(query, name, minVersion, maxVersion);
                 return query.ToList();
             }
@@ -210,7 +197,7 @@ namespace SimpleVersioning.Data.SQLServer
             }
             finally
             {
-                context.Dispose();
+                Context.Dispose();
             }
         }
 
@@ -221,7 +208,7 @@ namespace SimpleVersioning.Data.SQLServer
 
             try
             {
-                var query = context.Files.AsNoTracking();
+                var query = Context.Files.AsNoTracking();
                 AddFileQuery(query, propertyAndConditions);
                 return query.ToList();
             }
@@ -231,7 +218,7 @@ namespace SimpleVersioning.Data.SQLServer
             }
             finally
             {
-                context.Dispose();
+                Context.Dispose();
             }
         }
     
@@ -241,7 +228,7 @@ namespace SimpleVersioning.Data.SQLServer
 
             try
             {
-                var query = context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to);
+                var query = Context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to);
 
                 AddFileQuery(query, name, minVersion, maxVersion);
 
@@ -253,7 +240,7 @@ namespace SimpleVersioning.Data.SQLServer
             }
             finally
             {
-                context.DisposeAsync();
+                Context.DisposeAsync();
             }
         }
 
@@ -263,7 +250,7 @@ namespace SimpleVersioning.Data.SQLServer
 
             try
             {
-                var query = context.Files;
+                var query = Context.Files;
 
                 AddFileQuery(query, name, minVersion, maxVersion);
 
@@ -275,7 +262,7 @@ namespace SimpleVersioning.Data.SQLServer
             }
             finally
             {
-                context.DisposeAsync();
+                Context.DisposeAsync();
             }
         }
 
@@ -286,7 +273,7 @@ namespace SimpleVersioning.Data.SQLServer
 
             try
             {
-                var query = context.Files;
+                var query = Context.Files;
                 AddFileQuery(query, propertyAndConditions);
                 return query.ToListAsync();
             }
@@ -296,8 +283,11 @@ namespace SimpleVersioning.Data.SQLServer
             }
             finally
             {
-                context.DisposeAsync();
+                Context.DisposeAsync();
             }
         }
+
+
+        #endregion
     }
 }

@@ -16,7 +16,7 @@ namespace SimpleVersioning.Data
         /// </summary>
         /// <param name="id">Entity's Id</param>
         /// <returns>A task that can be awaiten which returns an instance of T, null otherwise</returns>
-        public Task<T> GetAsync<T>(int id) where T: class;
+        public Task<T> GetAsync<T>(int id) where T : class;
 
         /// <summary>
         /// Returns a instance of T.
@@ -24,7 +24,7 @@ namespace SimpleVersioning.Data
         /// <param name="id">Entity's Id</param>
         /// <returns></returns>
         /// <returnsAn instance of T, null if it hasn't been found</returns>
-        public T Get<T>(int id) where T: class;
+        public T Get<T>(int id) where T : class;
 
         /// <summary>
         /// Asynchronously add an entity in the storage system.
@@ -127,7 +127,7 @@ namespace SimpleVersioning.Data
         /// <param name="minVersion">Minimum version.</param>
         /// <param name="maxVersion">Maximum version.</param>
         /// <returns>A collection of files.</returns>
-        public List<File> GetFiles(string name = "", string minVersion = "", string maxVersion = ""); 
+        public List<File> GetFiles(string name = "", string minVersion = "", string maxVersion = "");
 
         /// <summary>
         /// Return all the files which respect the conditions of propertyAndConditions.
@@ -156,6 +156,6 @@ namespace SimpleVersioning.Data
         /// \The third item is the value which will be tested with the value of the property.</param>
         /// <returns>A collection of files.</returns>
         public List<File> GetFiles(List<Tuple<string, char, string>> propertyAndConditions);
-
+    }
   
 }

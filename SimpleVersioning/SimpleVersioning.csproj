@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>aspnet-SimpleVersioning-A86D3507-7FFC-4A64-97D2-68FF7FB227D1</UserSecretsId>
+    <Version>0.0.1</Version>
+    <Authors>Kevin Ferati</Authors>
+    <Copyright>MIT licence</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,13 +13,17 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.3" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Areas\" />
-    <Folder Include="Data\SQLServer\Migrations\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

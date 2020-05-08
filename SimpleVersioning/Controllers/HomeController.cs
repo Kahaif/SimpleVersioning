@@ -16,18 +16,6 @@ namespace SimpleVersioning.Controllers
         public HomeController(ILogger<HomeController> logger, IStorageRepository storageSystem)
         {
             _logger = logger;
-            storageSystem.Add(new File()
-            {
-                CreationTime = DateTime.Now,
-                FileType = "abc",
-                Name = "abc",
-                Hash = "abc",
-                LastUpdatedTime = DateTime.Now,
-                Path = "abc",
-                Properties = new List<FileProperty>() { new FileProperty() { Name = "abc", Value = "abc" } },
-                Version = "1.2"
-            });
-
         }
 
         public IActionResult Index()
