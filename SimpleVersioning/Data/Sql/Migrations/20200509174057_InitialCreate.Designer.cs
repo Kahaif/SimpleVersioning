@@ -10,36 +10,16 @@ using SimpleVersioning.Data.Sql;
 namespace SimpleVersioning.Data.Sql.Migrations
 {
     [DbContext(typeof(SqlServerContext))]
-    [Migration("20200508202331_InitialCreate")]
+    [Migration("20200509174057_InitialCreate")]
     partial class InitialCreate
     {
-          protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("SimpleVersioning.Models.Configuration", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Configurations");
-                });
 
             modelBuilder.Entity("SimpleVersioning.Models.File", b =>
                 {

@@ -4,6 +4,7 @@ using SimpleVersioning.Data;
 using SimpleVersioning.Data.Sql;
 using SimpleVersioning.Models;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Testing
@@ -13,6 +14,7 @@ namespace Testing
     public class StorageTest
     {
         IStorageRepository storage;
+      
 
         [TestInitialize]
         public void Initialize()
@@ -135,12 +137,27 @@ namespace Testing
         [TestMethod]
         public void AssertGetFiles()
         {
-            var files = Helper.GetRandomFiles(20);
+            var files = Helper.GetRandomFiles(5);
 
-            files.ForEach(x => x.LastUpdatedTime.AddDays(1));
+            files[0].Name = "---";
+            files[0].Version = "1.3.1";
+            files[1].Version = "1.2.3";
+            files[4].CreationTime = new DateTime(2010, 05, 1);
+            for (int i = 0; i < files.Count - 1; i++)
+            {
+                files[i].CreationTime = new DateTime(2020, 05, 1 + new Random().Next(1, 5));
+            }
 
             storage.AddRange(files);
-            
+
+            var files2 = storage.GetFiles("", "", "", FileSort.CreationTime);
+            Assert.AreEqual(files[4], files2.First());
+
+            var files3 = storage.GetFiles("---", "", "");
+            Assert.IsTrue(files3.First().Name == "---");
+
+            var files4 = storage.GetFiles("", "1.2.4");
+            Assert.IsTrue(files4.First().Version != "1.2.3");
 
         }
 

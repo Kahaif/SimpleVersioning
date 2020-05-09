@@ -4,11 +4,52 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace SimpleVersioning.Data.Sql
 {
+    public static class IQueriyableExtensions
+    {
+        public static IQueryable<File> AddFileQuery(this IQueryable<File> query, string name, string minVersion, string maxVersion)
+        {
+            if (name != "")
+                query = query.Where(file => file.Name == name);
+
+            if (minVersion != "")
+                query = query.Where(file => string.Compare(file.Version, minVersion, true) != -1);
+
+            if (maxVersion != "")
+                query = query.Where(file => string.Compare(file.Version, maxVersion, true) != 1);
+
+            return query;
+        }
+
+        public static IQueryable<File> AddFileQuery(this IQueryable<File> query, List<Tuple<string, char, string>> propertyAndConditions)
+        {
+            foreach (var item in propertyAndConditions)
+            {
+                query = item.Item2 switch
+                {
+                    '>' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) > 0).Count() > 0),
+                    '<' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) < 0).Count() > 0),
+                    '=' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) == 0).Count() > 0),
+                    '!' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && prop.Value != item.Item3).Count() > 0),
+                    _ => throw new ArgumentNullException(nameof(propertyAndConditions), $"Item2 of property name :  {item.Item1} and value : {item.Item3} incorrect"),
+                };
+            }
+            return query;
+        }
+
+        public static IQueryable<File> AddFileSorts(this IQueryable<File> query, FileSort sort)
+        {
+            if ((sort & FileSort.Name) == FileSort.Name) query = query.OrderBy(x => x.Name);
+            if ((sort & FileSort.Version) == FileSort.Version) query = query.OrderBy(x => x.Version);
+            if ((sort & FileSort.LastUpdatedTime) == FileSort.LastUpdatedTime) query = query.OrderBy(x => x.LastUpdatedTime);
+            if ((sort & FileSort.CreationTime) == FileSort.CreationTime) query = query.OrderBy(x => x.CreationTime);
+            return query;
+        }
+    }
+
     public class SqlServerStorageRepository : IStorageRepository
     {
         readonly DbContextOptions<SqlServerContext> options;
@@ -26,40 +67,6 @@ namespace SimpleVersioning.Data.Sql
             Context.Dispose();
         }
 
-        private void AddFileQuery(IQueryable<File> query, string name, string minVersion, string maxVersion)
-        {
-            if (name != "")
-                query = query.Where(file => file.Name == name);
-
-            if (minVersion != "")
-                query = query.Where(file => string.Compare(file.Version, minVersion, true) != -1);
-
-            if (maxVersion != "")
-                query = query.Where(file => string.Compare(file.Version, maxVersion, true) != 1);
-        }
-
-        private void AddFileQuery(IQueryable<File> query, List<Tuple<string, char, string>> propertyAndConditions)
-        {
-            foreach (var item in propertyAndConditions)
-            {
-                query = item.Item2 switch
-                {
-                    '>' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) > 0).Count() > 0),
-                    '<' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) < 0).Count() > 0),
-                    '=' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && string.Compare(item.Item3, prop.Value) == 0).Count() > 0),
-                    '!' => query.Where(file => file.Properties.Where(prop => prop.Name == item.Item1 && prop.Value != item.Item3).Count() > 0),
-                    _ => throw new ArgumentNullException(nameof(propertyAndConditions), $"Item2 of property name :  {item.Item1} and value : {item.Item3} incorrect"),
-                };
-            }
-        }
-
-        private void AddFileSorts(IQueryable<File> query, FileSort sort)
-        {
-            if ((sort & FileSort.Name) == FileSort.Name) query = query.OrderBy(x => x.Name);
-            if ((sort & FileSort.Version) == FileSort.Version) query = query.OrderBy(x => x.Version);
-            if ((sort & FileSort.LastUpdatedTime) == FileSort.LastUpdatedTime) query = query.OrderBy(x => x.LastUpdatedTime);
-            if ((sort & FileSort.CreationTime) == FileSort.CreationTime) query = query.OrderBy(x => x.CreationTime);
-        }
 
         #region IStorageRepository Implementation
 
@@ -168,10 +175,7 @@ namespace SimpleVersioning.Data.Sql
 
             try
             {
-                var query =  Context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to);
-
-                AddFileQuery(query, name, minVersion, maxVersion);
-                AddFileSorts(query, sort);
+                var query = Context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to).AddFileSorts(sort).AddFileQuery(name, minVersion, maxVersion);
                 
                 return query.AsEnumerable();
             }
@@ -187,9 +191,7 @@ namespace SimpleVersioning.Data.Sql
 
             try
             {
-                var query = Context.Files;
-                AddFileQuery(query, name, minVersion, maxVersion);
-                AddFileSorts(query, sort);
+                var query = Context.Files.AddFileQuery(name, minVersion, maxVersion).AddFileSorts(sort);
                 return query.AsEnumerable();
             }
             catch
@@ -205,9 +207,7 @@ namespace SimpleVersioning.Data.Sql
 
             try
             {
-                var query = Context.Files.AsNoTracking();
-                AddFileQuery(query, propertyAndConditions);
-                AddFileSorts(query, sort);
+                var query = Context.Files.AddFileQuery(propertyAndConditions).AddFileSorts(sort);
                 return query.AsEnumerable();
             }
             catch (Exception)
@@ -222,12 +222,9 @@ namespace SimpleVersioning.Data.Sql
 
             try
             {
-                var query = Context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to);
-
-                AddFileQuery(query, name, minVersion, maxVersion);
-                AddFileSorts(query, sort);
-
-                return query.AsAsyncEnumerable<File>();
+                var query = Context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to).AddFileQuery(name, minVersion, maxVersion).AddFileSorts(sort);
+                
+                return query.AsAsyncEnumerable();
             }
             catch
             {
@@ -237,16 +234,13 @@ namespace SimpleVersioning.Data.Sql
 
         public IAsyncEnumerable<File> GetFilesAsync(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name)
         {
-
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(minVersion) || string.IsNullOrEmpty(maxVersion)) throw new ArgumentNullException();
 
             try
             {
-                var query = Context.Files;
-
-                AddFileQuery(query, name, minVersion, maxVersion);
-                AddFileSorts(query, sort);
-                return query.AsAsyncEnumerable<File>();
+                var query = Context.Files.AddFileQuery(name, minVersion, maxVersion).AddFileSorts(sort);
+;
+                return query.AsAsyncEnumerable();
                 
             }
             catch
@@ -263,10 +257,8 @@ namespace SimpleVersioning.Data.Sql
 
             try
             {
-                var query = Context.Files;
-                AddFileQuery(query, propertyAndConditions);
-                AddFileSorts(query, sort);
-                return query.AsAsyncEnumerable<File>();
+                var query = Context.Files.AddFileQuery(propertyAndConditions).AddFileSorts(sort);
+                return query.AsAsyncEnumerable();
             }
             catch
             {
