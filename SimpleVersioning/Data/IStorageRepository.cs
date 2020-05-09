@@ -5,12 +5,21 @@ using System.Threading.Tasks;
 
 namespace SimpleVersioning.Data
 {
+    [Flags]
+    public enum FileSort: short
+    {
+        Version = 1,
+        Name = 2,
+        CreationTime = 4,
+        LastUpdatedTime = 8
+    }
+
     /// <summary>
     /// Classes which implement this interface will be able to store and retrieve Files and Configurations.
     /// </summary>
     public interface IStorageRepository
     {
-
+        
         /// <summary>
         /// Asynchronously returns an instance of T.
         /// </summary>
@@ -84,7 +93,7 @@ namespace SimpleVersioning.Data
         /// Asynchronously returns a collection of every item of the given entity
         /// </summary>
         /// <returns>A collection of the asked items</returns>
-        public Task<IEnumerable<T>> GetAsync<T>() where T : class;
+        public IAsyncEnumerable<T> GetAsync<T>() where T : class;
 
         /// <summary>
         /// Return all the files which respects the parameters.
@@ -95,7 +104,7 @@ namespace SimpleVersioning.Data
         /// <param name="minVersion">Minimum version.</param>
         /// <param name="maxVersion">Maximum version.</param>
         /// <returns>A task that can be awaited wich returns a collection of Files.</returns>
-        public Task<List<File>> GetFilesAsync(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "");
+        public IAsyncEnumerable<File> GetFilesAsync(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name);
 
         /// <summary>
         /// Return all the files which respects the parameters.
@@ -106,7 +115,7 @@ namespace SimpleVersioning.Data
         /// <param name="minVersion">Minimum version.</param>
         /// <param name="maxVersion">Maximum version.</param>
         /// <returns>A collection of files.</returns>
-        public List<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = ""); /// <summary>
+        public IEnumerable<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name); /// <summary>
 
         /// Return all the files which respects the parameters.
         /// </summary>
@@ -116,7 +125,7 @@ namespace SimpleVersioning.Data
         /// <param name="minVersion">Minimum version.</param>
         /// <param name="maxVersion">Maximum version.</param>
         /// <returns>A task that can be awaited wich returns a collection of Files.</returns>
-        public Task<List<File>> GetFilesAsync(string name = "", string minVersion = "", string maxVersion = "");
+        public IAsyncEnumerable<File> GetFilesAsync(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name);
 
         /// <summary>
         /// Return all the files which respects the parameters.
@@ -127,7 +136,7 @@ namespace SimpleVersioning.Data
         /// <param name="minVersion">Minimum version.</param>
         /// <param name="maxVersion">Maximum version.</param>
         /// <returns>A collection of files.</returns>
-        public List<File> GetFiles(string name = "", string minVersion = "", string maxVersion = "");
+        public IEnumerable<File> GetFiles(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name);
 
         /// <summary>
         /// Return all the files which respect the conditions of propertyAndConditions.
@@ -141,7 +150,7 @@ namespace SimpleVersioning.Data
         /// \n! : the value of the property has to be different than Item3
         /// \nItem3: the value which will be tested</param>
         /// <returns>An awaitable task which will return a collection of files.</returns>
-        public Task<List<File>> GetFilesAsync(List<Tuple<string, char, string>> propertyAndConditions);
+        public IAsyncEnumerable<File> GetFilesAsync(List<Tuple<string, char, string>> propertyAndConditions, FileSort sort = FileSort.Name);
 
         /// <summary>
         /// Return all the files which respect the conditions of propertyAndConditions.
@@ -155,7 +164,7 @@ namespace SimpleVersioning.Data
         /// \n! : the value of the property has to be different than Item3
         /// \The third item is the value which will be tested with the value of the property.</param>
         /// <returns>A collection of files.</returns>
-        public List<File> GetFiles(List<Tuple<string, char, string>> propertyAndConditions);
+        public IEnumerable<File> GetFiles(List<Tuple<string, char, string>> propertyAndConditions, FileSort sort = FileSort.Name);
     }
   
 }

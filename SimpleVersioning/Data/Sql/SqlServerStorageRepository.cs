@@ -3,9 +3,11 @@ using SimpleVersioning.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace SimpleVersioning.Data.SQLServer
+namespace SimpleVersioning.Data.Sql
 {
     public class SqlServerStorageRepository : IStorageRepository
     {
@@ -51,6 +53,14 @@ namespace SimpleVersioning.Data.SQLServer
             }
         }
 
+        private void AddFileSorts(IQueryable<File> query, FileSort sort)
+        {
+            if ((sort & FileSort.Name) == FileSort.Name) query = query.OrderBy(x => x.Name);
+            if ((sort & FileSort.Version) == FileSort.Version) query = query.OrderBy(x => x.Version);
+            if ((sort & FileSort.LastUpdatedTime) == FileSort.LastUpdatedTime) query = query.OrderBy(x => x.LastUpdatedTime);
+            if ((sort & FileSort.CreationTime) == FileSort.CreationTime) query = query.OrderBy(x => x.CreationTime);
+        }
+
         #region IStorageRepository Implementation
 
         #region Generic Add
@@ -93,12 +103,12 @@ namespace SimpleVersioning.Data.SQLServer
         #region Generic Get All
         public IEnumerable<T> Get<T>() where T : class
         {
-            return Context.Set<T>().ToList();
+            return Context.Set<T>().AsEnumerable();
         }
 
-        public async Task<IEnumerable<T>> GetAsync<T>() where T : class
+        public  IAsyncEnumerable<T> GetAsync<T>() where T : class
         {
-            return await Context.Set<T>().ToListAsync();
+            return Context.Set<T>().AsAsyncEnumerable();
         }
         #endregion
 
@@ -115,7 +125,6 @@ namespace SimpleVersioning.Data.SQLServer
             return (await Context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM {typeof(T).Name} WHERE Id = {id}")) > 0;
         }
         #endregion
-
         #region Generic Get
         public T Get<T>(int id) where T : class
         {
@@ -139,12 +148,6 @@ namespace SimpleVersioning.Data.SQLServer
             if (newValues == null) throw new ArgumentNullException(nameof(newValues));
 
             Context.Entry(Get<File>(id)).CurrentValues.SetValues(newValues);
-
-            /*
-            T entity = context.Set<T>().Find(id);
-            entity = newValues;
-            context.Set<T>().Update(entity);*/
-            //context.Entry(context.Set<T>().Find(id)).CurrentValues.SetValues(newValues);
             return Context.SaveChanges() > 0;
         }
 
@@ -159,7 +162,7 @@ namespace SimpleVersioning.Data.SQLServer
         #endregion
 
 
-        public List<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "")
+        public IEnumerable<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name, bool orderByAsc = true)
         {
             if (from == null || to == null || name == null || minVersion == null || maxVersion == null) throw new ArgumentNullException(); 
 
@@ -168,20 +171,17 @@ namespace SimpleVersioning.Data.SQLServer
                 var query =  Context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to);
 
                 AddFileQuery(query, name, minVersion, maxVersion);
-
-                return query.ToList();
+                AddFileSorts(query, sort);
+                
+                return query.AsEnumerable();
             }
             catch
             {
                 throw;
             }
-            finally
-            {
-                Context.Dispose();
-            }
         }
 
-        public List<File> GetFiles(string name = "", string minVersion = "", string maxVersion = "")
+        public IEnumerable<File> GetFiles(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name, bool orderByAsc = true)
         {
             if (name == null || minVersion == null || maxVersion == null) throw new ArgumentNullException();
 
@@ -189,19 +189,16 @@ namespace SimpleVersioning.Data.SQLServer
             {
                 var query = Context.Files;
                 AddFileQuery(query, name, minVersion, maxVersion);
-                return query.ToList();
+                AddFileSorts(query, sort);
+                return query.AsEnumerable();
             }
             catch
             {
                 throw;
             }
-            finally
-            {
-                Context.Dispose();
-            }
         }
 
-        public List<File> GetFiles(List<Tuple<string, char, string>> propertyAndConditions)
+        public IEnumerable<File> GetFiles(List<Tuple<string, char, string>> propertyAndConditions, FileSort sort = FileSort.Name, bool orderByAsc = true)
         {
             if (propertyAndConditions == null) throw new ArgumentNullException();
             if (propertyAndConditions.Count == 0) throw new ArgumentException();
@@ -210,19 +207,16 @@ namespace SimpleVersioning.Data.SQLServer
             {
                 var query = Context.Files.AsNoTracking();
                 AddFileQuery(query, propertyAndConditions);
-                return query.ToList();
+                AddFileSorts(query, sort);
+                return query.AsEnumerable();
             }
             catch (Exception)
             {
                 throw;
             }
-            finally
-            {
-                Context.Dispose();
-            }
         }
     
-        public Task<List<File>> GetFilesAsync(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "")
+        public IAsyncEnumerable<File> GetFilesAsync(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name, bool orderByAsc = true)
         {
             if (from == null || to == null || name == null || minVersion == null || maxVersion == null) throw new ArgumentNullException();
 
@@ -231,21 +225,19 @@ namespace SimpleVersioning.Data.SQLServer
                 var query = Context.Files.Where(file => file.CreationTime >= from && file.CreationTime <= to);
 
                 AddFileQuery(query, name, minVersion, maxVersion);
+                AddFileSorts(query, sort);
 
-                return query.ToListAsync();
+                return query.AsAsyncEnumerable<File>();
             }
             catch
             {
                 throw;
             }
-            finally
-            {
-                Context.DisposeAsync();
-            }
         }
 
-        public Task<List<File>> GetFilesAsync(string name = "", string minVersion = "", string maxVersion = "")
+        public IAsyncEnumerable<File> GetFilesAsync(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name, bool orderByAsc = true)
         {
+
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(minVersion) || string.IsNullOrEmpty(maxVersion)) throw new ArgumentNullException();
 
             try
@@ -253,21 +245,19 @@ namespace SimpleVersioning.Data.SQLServer
                 var query = Context.Files;
 
                 AddFileQuery(query, name, minVersion, maxVersion);
-
-                return query.ToListAsync();
+                AddFileSorts(query, sort);
+                return query.AsAsyncEnumerable<File>();
+                
             }
             catch
             {
                 throw;
             }
-            finally
-            {
-                Context.DisposeAsync();
-            }
         }
 
-        public Task<List<File>> GetFilesAsync(List<Tuple<string, char, string>> propertyAndConditions)
+        public IAsyncEnumerable<File> GetFilesAsync(List<Tuple<string, char, string>> propertyAndConditions, FileSort sort = FileSort.Name, bool orderByAsc = true)
         {
+
             if (propertyAndConditions == null) throw new ArgumentNullException();
             if (propertyAndConditions.Count == 0) throw new ArgumentException();
 
@@ -275,15 +265,12 @@ namespace SimpleVersioning.Data.SQLServer
             {
                 var query = Context.Files;
                 AddFileQuery(query, propertyAndConditions);
-                return query.ToListAsync();
+                AddFileSorts(query, sort);
+                return query.AsAsyncEnumerable<File>();
             }
             catch
             {
                 throw;
-            }
-            finally
-            {
-                Context.DisposeAsync();
             }
         }
 

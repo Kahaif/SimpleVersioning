@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SimpleVersioning.Models;
 
-namespace SimpleVersioning.Data.SQLServer
+namespace SimpleVersioning.Data.Sql
 {
     public class SqlServerContext: DbContext
     {
@@ -10,16 +10,17 @@ namespace SimpleVersioning.Data.SQLServer
         public DbSet<Configuration> Configurations { get; set; }
 
         public SqlServerContext(DbContextOptions<SqlServerContext> options) : base(options) { }
-
+        /*
         public SqlServerContext() : base() 
         { 
-        }
+        })*/
 
+        /*
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\SQLSERVER;Database=SimpleVersioning;Trusted_Connection=True;MultipleActiveResultSets=true;User ID=TestAccess;Password=test_password;");
+            //optionsBuilder.UseSqlServer("Server=(localdb)\\SQLSERVER;Database=SimpleVersioning;Trusted_Connection=True;MultipleActiveResultSets=true;User ID=TestAccess;Password=test_password;");
             base.OnConfiguring(optionsBuilder);
         }
-
+        */
     }
 }

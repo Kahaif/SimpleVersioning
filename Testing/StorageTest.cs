@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleVersioning.Data;
-using SimpleVersioning.Data.SQLServer;
+using SimpleVersioning.Data.Sql;
 using SimpleVersioning.Models;
 using System;
 using System.Threading.Tasks;
@@ -10,14 +10,40 @@ namespace Testing
 {
     
     [TestClass]
-    public class DbTest
+    public class StorageTest
     {
         IStorageRepository storage;
 
         [TestInitialize]
         public void Initialize()
         {
-            storage = new SqlServerStorageRepository(new DbContextOptionsBuilder<SqlServerContext>().UseSqlServer("Server=(localdb)\\SQLSERVER;Database=SimpleVersioning;Trusted_Connection=True;MultipleActiveResultSets=true;User ID=TestAccess;Password=test_password;").Options);
+            storage = new SqlServerStorageRepository(
+                new DbContextOptionsBuilder<SqlServerContext>().UseInMemoryDatabase("SimpleVersioning-Test").Options
+                );
+        }
+
+        [TestMethod]
+        public void AssertGetAll()
+        {
+            var files = Helper.GetRandomFiles(20);
+            storage.AddRange(files);
+
+            foreach (var item in storage.Get<File>())
+            {
+                Assert.IsNotNull(item);
+            }
+        }
+
+        [TestMethod]
+        public async Task AssertGetAllAsync()
+        {
+            var files = Helper.GetRandomFiles(20);
+            storage.AddRange(files);
+
+            await foreach (var item in storage.GetAsync<File>())
+            {
+                Assert.IsNotNull(item);
+            }
         }
 
         [TestMethod]
@@ -25,7 +51,7 @@ namespace Testing
         {
             var files = Helper.GetRandomFiles(1);
             storage.AddRange(files);
-
+            
             var retrievedFile = storage.Get<File>(files[0].Id);
             Assert.IsNotNull(storage.Get<File>(files[0].Id));
             Assert.AreEqual(retrievedFile, files[0]);
@@ -107,6 +133,19 @@ namespace Testing
         }
 
         [TestMethod]
+        public void AssertGetFiles()
+        {
+            var files = Helper.GetRandomFiles(20);
+
+            files.ForEach(x => x.LastUpdatedTime.AddDays(1));
+
+            storage.AddRange(files);
+            
+
+        }
+
+        /*
+        [TestMethod]
         public void AssertDelete()
         {
             var files = Helper.GetRandomFiles(1);
@@ -125,5 +164,6 @@ namespace Testing
             Assert.IsTrue(await storage.DeleteAsync<File>(files[0].Id));
             Assert.IsNull(await storage.GetAsync<File>(files[0].Id));
         }
+        */
     }
 }
