@@ -162,7 +162,7 @@ namespace SimpleVersioning.Data.Sql
         #endregion
 
 
-        public IEnumerable<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name, bool orderByAsc = true)
+        public IEnumerable<File> GetFiles(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name)
         {
             if (from == null || to == null || name == null || minVersion == null || maxVersion == null) throw new ArgumentNullException(); 
 
@@ -181,7 +181,7 @@ namespace SimpleVersioning.Data.Sql
             }
         }
 
-        public IEnumerable<File> GetFiles(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name, bool orderByAsc = true)
+        public IEnumerable<File> GetFiles(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name)
         {
             if (name == null || minVersion == null || maxVersion == null) throw new ArgumentNullException();
 
@@ -198,7 +198,7 @@ namespace SimpleVersioning.Data.Sql
             }
         }
 
-        public IEnumerable<File> GetFiles(List<Tuple<string, char, string>> propertyAndConditions, FileSort sort = FileSort.Name, bool orderByAsc = true)
+        public IEnumerable<File> GetFiles(List<Tuple<string, char, string>> propertyAndConditions, FileSort sort = FileSort.Name)
         {
             if (propertyAndConditions == null) throw new ArgumentNullException();
             if (propertyAndConditions.Count == 0) throw new ArgumentException();
@@ -216,7 +216,7 @@ namespace SimpleVersioning.Data.Sql
             }
         }
     
-        public IAsyncEnumerable<File> GetFilesAsync(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name, bool orderByAsc = true)
+        public IAsyncEnumerable<File> GetFilesAsync(DateTime from, DateTime to, string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name)
         {
             if (from == null || to == null || name == null || minVersion == null || maxVersion == null) throw new ArgumentNullException();
 
@@ -235,7 +235,7 @@ namespace SimpleVersioning.Data.Sql
             }
         }
 
-        public IAsyncEnumerable<File> GetFilesAsync(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name, bool orderByAsc = true)
+        public IAsyncEnumerable<File> GetFilesAsync(string name = "", string minVersion = "", string maxVersion = "", FileSort sort = FileSort.Name)
         {
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(minVersion) || string.IsNullOrEmpty(maxVersion)) throw new ArgumentNullException();
@@ -255,7 +255,7 @@ namespace SimpleVersioning.Data.Sql
             }
         }
 
-        public IAsyncEnumerable<File> GetFilesAsync(List<Tuple<string, char, string>> propertyAndConditions, FileSort sort = FileSort.Name, bool orderByAsc = true)
+        public IAsyncEnumerable<File> GetFilesAsync(List<Tuple<string, char, string>> propertyAndConditions, FileSort sort = FileSort.Name)
         {
 
             if (propertyAndConditions == null) throw new ArgumentNullException();
