@@ -17,13 +17,12 @@ namespace SimpleVersioning.Models
         public DateTime LastUpdatedTime { get; set; }
         [Required]
         public string Version { get; set; }
-        [Required]
-        public List<FileProperty> Properties { get; set; }
+
+        public List<FileProperty> FileProperties { get; set; }
         [Required]
         public string Type { get; set; }
         [Required]
         public string Path { get; set; }
-        [Required]
         public byte[] Content { get; set; }
     }
 }

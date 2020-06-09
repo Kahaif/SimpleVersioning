@@ -20,7 +20,7 @@ namespace SimpleVersioning.Data.Sql.Migrations
                     Version = table.Column<string>(nullable: false),
                     Type = table.Column<string>(nullable: false),
                     Path = table.Column<string>(nullable: false),
-                    Content = table.Column<byte[]>(nullable: false)
+                    Content = table.Column<byte[]>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -35,7 +35,7 @@ namespace SimpleVersioning.Data.Sql.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(nullable: false),
                     Value = table.Column<string>(nullable: false),
-                    FileId = table.Column<int>(nullable: false)
+                    FileId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -45,7 +45,7 @@ namespace SimpleVersioning.Data.Sql.Migrations
                         column: x => x.FileId,
                         principalTable: "Files",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(

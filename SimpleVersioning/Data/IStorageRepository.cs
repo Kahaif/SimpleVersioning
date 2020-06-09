@@ -14,6 +14,14 @@ namespace SimpleVersioning.Data
         LastUpdatedTime = 8
     }
 
+    public enum Comparators: byte
+    {
+        Greater = (byte)'>',
+        Lesser = (byte)'<',
+        Different = (byte)'!',
+        Same = (byte)'='
+    }
+
     /// <summary>
     /// Classes which implement this interface will be able to store and retrieve Files and Configurations.
     /// </summary>

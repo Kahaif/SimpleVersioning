@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SimpleVersioning.Data.Sql;
 
 namespace SimpleVersioning.Data.Sql.Migrations
 {
     [DbContext(typeof(SqlServerContext))]
-    partial class SqlServerContextModelSnapshot : ModelSnapshot
+    [Migration("20200509211743_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,13 +83,13 @@ namespace SimpleVersioning.Data.Sql.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.ToTable("FileProperties");
+                    b.ToTable("Properties");
                 });
 
             modelBuilder.Entity("SimpleVersioning.Models.FileProperty", b =>
                 {
                     b.HasOne("SimpleVersioning.Models.File", "File")
-                        .WithMany("FileProperties")
+                        .WithMany("Properties")
                         .HasForeignKey("FileId");
                 });
 #pragma warning restore 612, 618

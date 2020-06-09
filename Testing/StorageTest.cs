@@ -4,6 +4,7 @@ using SimpleVersioning.Data;
 using SimpleVersioning.Data.Sql;
 using SimpleVersioning.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,39 +14,41 @@ namespace Testing
     [TestClass]
     public class StorageTest
     {
-        IStorageRepository storage;
-      
+        SqlServerStorageRepository storage;
 
         [TestInitialize]
         public void Initialize()
         {
             storage = new SqlServerStorageRepository(
-                new DbContextOptionsBuilder<SqlServerContext>().UseInMemoryDatabase("SimpleVersioning-Test").Options
-                );
+                   new DbContextOptionsBuilder<SqlServerContext>()
+                   .UseSqlServer(@"Data Source=PC-Kevin\SQLSERVER;Database=SimpleVersioning;Integrated Security=True;MultipleActiveResultSets=True;").Options);
+
+            storage.Context.Database.ExecuteSqlRaw("DELETE FROM dbo.Files DBCC CHECKIDENT('dbo.Files', RESEED, 0)");
+            storage.Context.Database.ExecuteSqlRaw("TRUNCATE TABLE dbo.FileProperties");
         }
 
         [TestMethod]
         public void AssertGetAll()
         {
-            var files = Helper.GetRandomFiles(20);
+            var files = Helper.GetRandomFiles(10);
             storage.AddRange(files);
-
-            foreach (var item in storage.Get<File>())
-            {
-                Assert.IsNotNull(item);
-            }
+            Assert.IsTrue(storage.Get<File>().Count() >= files.Count());
         }
 
         [TestMethod]
         public async Task AssertGetAllAsync()
         {
-            var files = Helper.GetRandomFiles(20);
+            var files = Helper.GetRandomFiles(10);
             storage.AddRange(files);
-
-            await foreach (var item in storage.GetAsync<File>())
+            var receivedFile = storage.GetAsync<File>();
+            int count = 0;
+            
+            await foreach (var item in receivedFile)
             {
-                Assert.IsNotNull(item);
+                count++;
             }
+
+            Assert.IsTrue(count >= files.Count());
         }
 
         [TestMethod]
@@ -62,7 +65,6 @@ namespace Testing
         [TestMethod]
         public async Task AssertGetAsync()
         {
-
             var files = Helper.GetRandomFiles(1);
             storage.AddRange(files);
 
@@ -103,8 +105,6 @@ namespace Testing
             await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await storage.AddRangeAsync<File>(null));
         }
 
-
-
         [TestMethod]
         public void AssertUpdate()
         {
@@ -129,7 +129,7 @@ namespace Testing
 
             Assert.IsTrue(await storage.UpdateAsync(files[0].Id, f));
             Assert.IsTrue((await storage.GetAsync<File>(files[0].Id)).Name == f.Name);
-            await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await storage.UpdateAsync<File>(-4, f));
+            await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await storage.UpdateAsync(-4, f));
             await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await storage.UpdateAsync<File>(4, null));
 
         }
@@ -137,31 +137,131 @@ namespace Testing
         [TestMethod]
         public void AssertGetFiles()
         {
-            var files = Helper.GetRandomFiles(5);
-
-            files[0].Name = "---";
-            files[0].Version = "1.3.1";
-            files[1].Version = "1.2.3";
-            files[4].CreationTime = new DateTime(2010, 05, 1);
-            for (int i = 0; i < files.Count - 1; i++)
+            List<File> files = new List<File>()
             {
-                files[i].CreationTime = new DateTime(2020, 05, 1 + new Random().Next(1, 5));
-            }
+                new File()
+                {
+                    Name = "aaa",
+                    Version = "0.0.1",
+                    CreationTime = new DateTime(2020, 08, 10),
+                    LastUpdatedTime = new DateTime(2020, 08, 10),
+                    Path = ".",
+                    Type = "."
+                    
+                },
+                new File()
+                {
+                    Name = "aba",
+                    Version = "0.1.1",
+                    CreationTime = new DateTime(2020, 08, 11),
+                    LastUpdatedTime = new DateTime(2020, 08, 11),
+                    Path = ".",
+                    Type = "."
 
+                },
+                new File()
+                {
+                    Name = "aaa",
+                    Version = "0.0.2",
+                    CreationTime = new DateTime(2020, 08, 12),
+                    LastUpdatedTime = new DateTime(2020, 08, 12),
+                    Path = ".",
+                    Type = "."
+
+                },
+                new File()
+                {
+                    Name = "zzz",
+                    Version = "0.0.5",
+                    CreationTime = new DateTime(2020, 08, 13),
+                    LastUpdatedTime = new DateTime(2020, 08, 13),
+                    Path = ".",
+                    Type = "."
+
+                }
+
+            };
             storage.AddRange(files);
 
-            var files2 = storage.GetFiles("", "", "", FileSort.CreationTime);
-            Assert.AreEqual(files[4], files2.First());
+            var retrievedFiles = storage.GetFiles(new DateTime(2020, 08, 10), new DateTime(2020, 08, 11));
+            Assert.IsTrue(retrievedFiles.Count() == 2);
 
-            var files3 = storage.GetFiles("---", "", "");
-            Assert.IsTrue(files3.First().Name == "---");
+            retrievedFiles = storage.GetFiles(new DateTime(2020, 08, 10), new DateTime(2020, 08, 15));
+            Assert.IsTrue(retrievedFiles.Count() == 4);
+            Assert.IsTrue(retrievedFiles.ElementAt(0).Name == "aaa" 
+                && retrievedFiles.ElementAt(1).Name == "aaa"
+                && retrievedFiles.ElementAt(2).Name == "aba"
+                && retrievedFiles.ElementAt(3).Name == "zzz");
 
-            var files4 = storage.GetFiles("", "1.2.4");
-            Assert.IsTrue(files4.First().Version != "1.2.3");
+            retrievedFiles = storage.GetFiles(new DateTime(2020, 08, 10), new DateTime(2020, 08, 12), "", "0.0.2");
+            Assert.IsTrue(retrievedFiles.Count() == 2);
+
+            retrievedFiles = storage.GetFiles("aaa");
+            Assert.IsTrue(retrievedFiles.Count() == 2);
+
+            retrievedFiles = storage.GetFiles("aaa", "0.0.5", "0.0.6");
+            Assert.IsTrue(retrievedFiles.Count() == 0);
+
+            retrievedFiles = storage.GetFiles("aaa", "0.0.2");
+            Assert.IsTrue(retrievedFiles.Count() == 1);
 
         }
-
         /*
+        [TestMethod]
+        public async Task AssertGetFilesAsync()
+        {
+            List<File> files = new List<File>()
+            {
+                new File()
+                {
+                    Name = "aaa",
+                    Version = "0.0.1",
+                    CreationTime = new DateTime(2020, 08, 10),
+                    LastUpdatedTime = new DateTime(2020, 08, 10),
+                    Path = ".",
+                    Type = "."
+
+                },
+                new File()
+                {
+                    Name = "aba",
+                    Version = "0.1.1",
+                    CreationTime = new DateTime(2020, 08, 11),
+                    LastUpdatedTime = new DateTime(2020, 08, 11),
+                    Path = ".",
+                    Type = "."
+
+                },
+                new File()
+                {
+                    Name = "aaa",
+                    Version = "0.0.2",
+                    CreationTime = new DateTime(2020, 08, 12),
+                    LastUpdatedTime = new DateTime(2020, 08, 12),
+                    Path = ".",
+                    Type = "."
+
+                },
+                new File()
+                {
+                    Name = "zzz",
+                    Version = "0.0.5",
+                    CreationTime = new DateTime(2020, 08, 13),
+                    LastUpdatedTime = new DateTime(2020, 08, 13),
+                    Path = ".",
+                    Type = "."
+
+                }
+
+            };
+            await storage.AddRangeAsync(files);
+
+            await foreach (var file in storage.GetF )
+            {
+
+            }
+        }
+        */
         [TestMethod]
         public void AssertDelete()
         {
@@ -181,6 +281,6 @@ namespace Testing
             Assert.IsTrue(await storage.DeleteAsync<File>(files[0].Id));
             Assert.IsNull(await storage.GetAsync<File>(files[0].Id));
         }
-        */
     }
 }
+ 

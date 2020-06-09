@@ -10,8 +10,8 @@ using SimpleVersioning.Data.Sql;
 namespace SimpleVersioning.Data.Sql.Migrations
 {
     [DbContext(typeof(SqlServerContext))]
-    [Migration("20200509174057_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20200510102925_RemoveRequirements")]
+    partial class RemoveRequirements
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -29,7 +29,6 @@ namespace SimpleVersioning.Data.Sql.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<byte[]>("Content")
-                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime>("CreationTime")
@@ -69,7 +68,7 @@ namespace SimpleVersioning.Data.Sql.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("FileId")
+                    b.Property<int?>("FileId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -91,9 +90,7 @@ namespace SimpleVersioning.Data.Sql.Migrations
                 {
                     b.HasOne("SimpleVersioning.Models.File", "File")
                         .WithMany("Properties")
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FileId");
                 });
 #pragma warning restore 612, 618
         }

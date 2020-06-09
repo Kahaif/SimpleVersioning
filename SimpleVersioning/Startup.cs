@@ -9,6 +9,7 @@ using SimpleVersioning.Logger;
 using System;
 using Microsoft.EntityFrameworkCore;
 using SimpleVersioning.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace SimpleVersioning
 {
@@ -32,7 +33,7 @@ namespace SimpleVersioning
             services.AddRazorPages();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostBuilder builder, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -44,7 +45,14 @@ namespace SimpleVersioning
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+            builder.ConfigureServices((context, services) => {
+                services.AddDbContext<SqlServerContext>(options =>
+                    options.UseSqlServer(
+                        context.Configuration.GetConnectionString("SimpleVersioning")));
 
+                services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                    .AddEntityFrameworkStores<SqlServerContext>();
+            });
             loggerFactory.AddProvider(
                 new LoggerProvider(
                     new LoggerConfiguration()
