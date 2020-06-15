@@ -1,23 +1,26 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.CodeAnalysis.Options;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SimpleVersioning.Data;
 using SimpleVersioning.Data.Sql;
 using SimpleVersioning.Logger;
 using System;
-using Microsoft.EntityFrameworkCore;
-using SimpleVersioning.Data;
-using Microsoft.AspNetCore.Identity;
 
 namespace SimpleVersioning
 {
     public class Startup
     {
+        private bool UseInterface;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            UseInterface = Configuration["UseInterface"] == "true";
         }
 
         public IConfiguration Configuration { get; }
@@ -29,11 +32,21 @@ namespace SimpleVersioning
                     new DbContextOptionsBuilder<SqlServerContext>().UseSqlServer(Configuration.GetConnectionString("SimpleVersioning")).Options
                 )
             );
-            services.AddControllersWithViews();
-            services.AddRazorPages();
+            
+            services.AddDbContext<SqlServerContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("SimpleVersioning")));
+
+            services.AddDefaultIdentity<IdentityUser>()
+                .AddEntityFrameworkStores<SqlServerContext>();
+           
+            if (UseInterface)
+            {
+                services.AddControllersWithViews();
+                services.AddRazorPages();
+            }
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostBuilder builder, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -42,17 +55,11 @@ namespace SimpleVersioning
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                if (UseInterface)
+                    app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-            builder.ConfigureServices((context, services) => {
-                services.AddDbContext<SqlServerContext>(options =>
-                    options.UseSqlServer(
-                        context.Configuration.GetConnectionString("SimpleVersioning")));
-
-                services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                    .AddEntityFrameworkStores<SqlServerContext>();
-            });
+          
             loggerFactory.AddProvider(
                 new LoggerProvider(
                     new LoggerConfiguration()
@@ -62,7 +69,11 @@ namespace SimpleVersioning
                     )); 
            
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+
+            if (UseInterface)
+            {
+                app.UseStaticFiles();
+            }
             
             app.UseRouting();
 
@@ -74,7 +85,11 @@ namespace SimpleVersioning
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapRazorPages();
+                
+                if (UseInterface)
+                {
+                    endpoints.MapRazorPages();
+                }
             });
         }
     }
