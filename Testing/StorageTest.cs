@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SimpleVersioning.Data;
 using SimpleVersioning.Data.Sql;
 using SimpleVersioning.Models;
 using System;
@@ -10,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Testing
 {
-    
+
     [TestClass]
     public class StorageTest
     {
@@ -23,16 +22,21 @@ namespace Testing
                    new DbContextOptionsBuilder<SqlServerContext>()
                    .UseSqlServer(@"Data Source=PC-Kevin\SQLSERVER;Database=SimpleVersioning;Integrated Security=True;MultipleActiveResultSets=True;").Options);
 
-            storage.Context.Database.ExecuteSqlRaw("DELETE FROM dbo.Files DBCC CHECKIDENT('dbo.Files', RESEED, 0)");
-            storage.Context.Database.ExecuteSqlRaw("TRUNCATE TABLE dbo.FileProperties");
+            storage.Context.Database.ExecuteSqlRaw("EXEC sp_MSforeachtable  \"ALTER TABLE ? NOCHECK CONSTRAINT all\"");
+            
+            storage.Context.Database.ExecuteSqlRaw("DELETE FROM dbo.Files");
+            storage.Context.Database.ExecuteSqlRaw("DELETE FROM dbo.FileProperties");
+            storage.Context.Database.ExecuteSqlRaw("DELETE FROM dbo.FileVersions");
+
+            storage.Context.Database.ExecuteSqlRaw("EXEC sp_MSforeachtable \"ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all\"");
+
         }
 
         [TestMethod]
         public void AssertGetAll()
         {
             var files = Helper.GetRandomFiles(10);
-            storage.AddRange(files);
-            Assert.IsTrue(storage.Get<File>().Count() >= files.Count());
+            Assert.IsTrue(storage.AddRange(files));
         }
 
         [TestMethod]
@@ -76,6 +80,7 @@ namespace Testing
         [TestMethod]
         public void AssertAdd()
         {
+
             var files = Helper.GetRandomFiles(1);
             Assert.IsTrue(storage.Add(files[0]));
             Assert.ThrowsException<ArgumentNullException>(() => storage.Add<File>(null));
@@ -142,45 +147,73 @@ namespace Testing
                 new File()
                 {
                     Name = "aaa",
-                    Version = "0.0.1",
-                    CreationTime = new DateTime(2020, 08, 10),
-                    LastUpdatedTime = new DateTime(2020, 08, 10),
-                    Path = ".",
-                    Type = "."
+                    Versions = new List<FileVersion>()
+                    {
+                        new FileVersion()
+                        {
+
+                            Version = "0.0.1",
+                            CreationTime = new DateTime(2020, 08, 10),
+                            LastUpdatedTime = new DateTime(2020, 08, 10),
+                            Path = ".",
+                            Type = "."
+                        }
+                    }
                     
                 },
                 new File()
-                {
+                { 
+                    Versions = new List<FileVersion>()
+                    {
+                        new FileVersion()
+                        {
+
+                            Version = "0.1.1",
+                            CreationTime = new DateTime(2020, 08, 11),
+                            LastUpdatedTime = new DateTime(2020, 08, 11),
+                            Path = ".",
+                            Type = "."
+                        }
+                    },
                     Name = "aba",
-                    Version = "0.1.1",
-                    CreationTime = new DateTime(2020, 08, 11),
-                    LastUpdatedTime = new DateTime(2020, 08, 11),
-                    Path = ".",
-                    Type = "."
 
                 },
                 new File()
                 {
                     Name = "aaa",
-                    Version = "0.0.2",
-                    CreationTime = new DateTime(2020, 08, 12),
-                    LastUpdatedTime = new DateTime(2020, 08, 12),
-                    Path = ".",
-                    Type = "."
 
+                   Versions = new List<FileVersion>()
+                   { 
+                       new FileVersion()
+                       {
+                            Version = "0.0.2",
+                            CreationTime = new DateTime(2020, 08, 12),
+                            LastUpdatedTime = new DateTime(2020, 08, 12),
+                            Path = ".",
+                            Type = "."
+                       }
+                   }
                 },
                 new File()
                 {
-                    Name = "zzz",
-                    Version = "0.0.5",
-                    CreationTime = new DateTime(2020, 08, 13),
-                    LastUpdatedTime = new DateTime(2020, 08, 13),
-                    Path = ".",
-                    Type = "."
+                   Name = "zzz",
 
+                   Versions = new List<FileVersion>()
+                   { 
+                       new FileVersion()
+                       {
+                        Version = "0.0.5",
+                        CreationTime = new DateTime(2020, 08, 13),
+                        LastUpdatedTime = new DateTime(2020, 08, 13),
+                        Path = ".",
+                        Type = "."
+                       }
+                   }
+                   
                 }
 
             };
+
             storage.AddRange(files);
 
             var retrievedFiles = storage.GetFiles(new DateTime(2020, 08, 10), new DateTime(2020, 08, 11));
@@ -193,9 +226,7 @@ namespace Testing
                 && retrievedFiles.ElementAt(2).Name == "aba"
                 && retrievedFiles.ElementAt(3).Name == "zzz");
 
-            retrievedFiles = storage.GetFiles(new DateTime(2020, 08, 10), new DateTime(2020, 08, 12), "", "0.0.2");
-            Assert.IsTrue(retrievedFiles.Count() == 2);
-
+          
             retrievedFiles = storage.GetFiles("aaa");
             Assert.IsTrue(retrievedFiles.Count() == 2);
 

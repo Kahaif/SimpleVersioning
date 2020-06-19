@@ -1,4 +1,5 @@
-﻿using SimpleVersioning.Models;
+﻿using SimpleVersioning.Data;
+using SimpleVersioning.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ namespace Testing
 {
     public static class Helper
     {
+      
         public static List<File> GetRandomFiles(int length)
         {
             var res = new List<File>();
@@ -31,21 +33,38 @@ namespace Testing
                 files.Add(new File()
                 {
                     Name = Helper.GetRandomString(5),
-                    CreationTime = DateTime.Now,
-                    LastUpdatedTime = DateTime.Now,
-                    Type = "json",
-                    Hash = Helper.GetRandomString(5),
-                    Version = Helper.GetRandomString(2),
-                    FileProperties = new List<FileProperty>()
+                    Versions = new List<FileVersion>()
                     {
-                        new FileProperty()
+                        new FileVersion()
                         {
-                            Name = Helper.GetRandomString(2),
-                            Value = Helper.GetRandomString(2)
+                            CreationTime = DateTime.Now,
+                            LastUpdatedTime = DateTime.Now,
+                            Type = "json",
+                            Hash = Helper.GetRandomString(5),
+                            Version = Helper.GetRandomString(2),
+                            FileProperties = new List<FileProperty>()
+                            {
+                                    new FileProperty()
+                                    {
+                                        Name = Helper.GetRandomString(2),
+                                        Value = Helper.GetRandomString(2)
+                                    }
+                            },
+                            Path = Helper.GetRandomString(5)
+
                         }
-                    },
-                    Path = Helper.GetRandomString(5)
+                    }
+                   
                 });
+            }
+        }
+        public static void DeleteAllFiles(this IStorageRepository storageRepo)
+        {
+            List<File> files = storageRepo.GetFiles().ToList();
+
+            foreach (var file in files)
+            {
+                storageRepo.Delete<File>(file.Id);
             }
         }
     }

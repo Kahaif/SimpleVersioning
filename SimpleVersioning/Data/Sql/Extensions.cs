@@ -12,35 +12,32 @@ namespace SimpleVersioning.Data.Sql
     {
         public static IQueryable<File> BuildQueryWithComparison(this DbSet<File> files, string name, string minVersion, string maxVersion)
         {
-            static string AddWhere(string command)
-            {
-                if (command != "") return " AND ";
-                else return " WHERE ";
-            }
+            
 
             string[] parameters = { "", "", "" };
             string sqlConditions = "";
            
             if (name != "")
             {
-                sqlConditions = AddWhere(sqlConditions) + "Name = {0}";
+                sqlConditions = " AND Files.Name = {0}";
                 parameters[0] = name;
             }
 
             if (minVersion != "")
             {
-                sqlConditions += AddWhere(sqlConditions) + "Version >= {1}";
+                sqlConditions += " AND FileVersions.Version >= {1}";
                 parameters[1] = minVersion;
             }
 
             if (maxVersion != "")
             { 
-                sqlConditions += AddWhere(sqlConditions) + "Version <= {2}";
+                sqlConditions += " AND FileVersions.Version <= {2}";
                 parameters[2] = maxVersion;
             }
 
             if (sqlConditions != "")
-                return files.FromSqlRaw("SELECT * FROM FILES" + sqlConditions, parameters);
+                
+                return files.FromSqlRaw("SELECT Files.* FROM Files, FileVersions WHERE Files.Id = FileVersions.FileId" + sqlConditions, parameters);
             else
                 return files;
 
@@ -74,9 +71,9 @@ namespace SimpleVersioning.Data.Sql
         {
             
             if ((sort & FileSort.Name) == FileSort.Name) query = query.OrderBy(x => x.Name);
-            if ((sort & FileSort.Version) == FileSort.Version) query = query.OrderBy(x => x.Version);
-            if ((sort & FileSort.LastUpdatedTime) == FileSort.LastUpdatedTime) query = query.OrderBy(x => x.LastUpdatedTime);
-            if ((sort & FileSort.CreationTime) == FileSort.CreationTime) query = query.OrderBy(x => x.CreationTime);
+            if ((sort & FileSort.Version) == FileSort.Version) query = query.OrderBy(x => x.Versions.Select(v => v.Version));
+            if ((sort & FileSort.LastUpdatedTime) == FileSort.LastUpdatedTime) query = query.OrderBy(x => x.Versions.Select(v => v.LastUpdatedTime));
+            if ((sort & FileSort.CreationTime) == FileSort.CreationTime) query = query.OrderBy(x => x.Versions.Select(v => v.CreationTime));
             return query;
         }
     }

@@ -135,7 +135,9 @@ namespace SimpleVersioning.Data.Sql
 
             try
             {
-                var query = Context.Files.BuildQueryWithComparison(name, minVersion, maxVersion).Where(file => DateTime.Compare(file.CreationTime, from) >= 0 && DateTime.Compare(file.CreationTime, to) <= 0).Sort(sort);
+                var query = Context.Files.BuildQueryWithComparison(name, minVersion, maxVersion)
+                    .Where(file => file.Versions.Where(version => DateTime.Compare(version.CreationTime, from) >= 0 && DateTime.Compare(version.CreationTime, to) <= 0).Count() > 0)
+                    .Sort(sort);
                 
                 return query.AsEnumerable();
             }
@@ -182,7 +184,9 @@ namespace SimpleVersioning.Data.Sql
 
             try
             {
-                var query = Context.Files.BuildQueryWithComparison(name, minVersion, maxVersion).Where(file => file.CreationTime >= from && file.CreationTime <= to).Sort(sort);
+                var query = Context.Files.BuildQueryWithComparison(name, minVersion, maxVersion)
+                    .Where(file => file.Versions.Where(version => DateTime.Compare(version.CreationTime, from) >= 0 && DateTime.Compare(version.CreationTime, to) <= 0).Count() > 0)
+                    .Sort(sort);
                 
                 return query.AsAsyncEnumerable();
             }
