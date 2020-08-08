@@ -6,24 +6,27 @@ namespace SimpleVersioning.Models
 {
     public class FileVersion
     {
+        [Key]
         public int Id { get; set; }
+
         public string Hash { get; set; }
+
+        [Required]
         public DateTime CreationTime { get; set; }
+
+        [Required]
         public DateTime LastUpdatedTime { get; set; }
+
         [Required]
         public string Version { get; set; }
-
-        public List<FileProperty> FileProperties { get; set; }
-
         [Required]
         public string Type { get; set; }
 
-        [Required]
         public string Path { get; set; }
 
+        public string Description { get; set; }
+
         public byte[] Content { get; set; }
-
-        public File File { get; set; }
-
+        
     }
 }

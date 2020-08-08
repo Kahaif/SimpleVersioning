@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SimpleVersioning.Data;
 using SimpleVersioning.Models;
 using System;
 using System.Collections.Generic;
@@ -6,20 +7,26 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace SimpleVersioning.Data.Sql
+namespace SimpleVersioning.Extensions
 {
-    public static class Extensions
+    public static class EFCoreExtensions
     {
+        /// <summary>
+        /// Add the AND clauses to filter through the names and min/max versions.
+        /// </summary>
+        /// <param name="files">The files.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="minVersion">The minimum version.</param>
+        /// <param name="maxVersion">The maximum version.</param>
         public static IQueryable<File> BuildQueryWithComparison(this DbSet<File> files, string name, string minVersion, string maxVersion)
         {
             
-
             string[] parameters = { "", "", "" };
             string sqlConditions = "";
            
             if (name != "")
             {
-                sqlConditions = " AND Files.Name = {0}";
+                sqlConditions = " AND Files.ResourceName = {0}";
                 parameters[0] = name;
             }
 
@@ -43,6 +50,12 @@ namespace SimpleVersioning.Data.Sql
 
         }
 
+        /// <summary>
+        /// Compare the list of tuples with the properties of the file version
+        /// </summary>
+        /// <param name="files">The files.</param>
+        /// <param name="propertyAndConditions">The property and conditions.</param>
+        /// <exception cref="ArgumentException">propertyAndConditions - Invalid comparator for {propertyAndCondition.Item1} with value {propertyAndCondition.Item3}</exception>
         public static IQueryable<File> CompareFileProperties(this DbSet<File> files, List<Tuple<string, char, string>> propertyAndConditions)
         {
             foreach (var propertyAndCondition in propertyAndConditions)

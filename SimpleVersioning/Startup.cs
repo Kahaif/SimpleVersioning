@@ -16,33 +16,37 @@ namespace SimpleVersioning
 {
     public class Startup
     {
-        private bool UseInterface;
+        private readonly bool UseInterface;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            UseInterface = Configuration["UseInterface"] == "true";
+            UseInterface = Configuration.GetValue<int>("UseInterface") == 1 ;
         }
 
         public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddSingleton<IStorageRepository>(
-                new SqlServerStorageRepository(
-                    new DbContextOptionsBuilder<SqlServerContext>().UseSqlServer(Configuration.GetConnectionString("SimpleVersioning")).Options
-                )
+            string connectionString = Configuration.GetConnectionString("SimpleVersioning");
+            services.AddSingleton<IStorageRepositoryAsync>(
+                new MariaDBStorageRepository(new DbContextOptionsBuilder<MariaDBServerContext>().UseMySql(connectionString).Options)
             );
-            
+
+            /*
             services.AddDbContext<SqlServerContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("SimpleVersioning")));
 
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<SqlServerContext>();
-           
+           */
             if (UseInterface)
             {
                 services.AddControllersWithViews();
                 services.AddRazorPages();
+            }
+            else
+            {
+                services.AddControllers();
             }
         }
 
@@ -59,7 +63,8 @@ namespace SimpleVersioning
                     app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-          
+
+            
             loggerFactory.AddProvider(
                 new LoggerProvider(
                     new LoggerConfiguration()
@@ -67,7 +72,7 @@ namespace SimpleVersioning
                         Callback = s => Console.WriteLine(s)
                     }
                     )); 
-           
+            
             app.UseHttpsRedirection();
 
             if (UseInterface)

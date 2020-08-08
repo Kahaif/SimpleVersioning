@@ -339,3 +339,4 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 SimpleVersioning/appsettings.json
+IntegrationTest/UnitTest1.cs

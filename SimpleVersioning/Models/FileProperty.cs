@@ -5,6 +5,7 @@ namespace SimpleVersioning.Models
   
     public class FileProperty
     {
+        [Key]
         public int Id { get; set; }
 
         [Required]
@@ -12,7 +13,5 @@ namespace SimpleVersioning.Models
 
         [Required]
         public string Value { get; set; }
-
-        public File File { get; set; }
     }
 }

@@ -1,8 +1,10 @@
-﻿using SimpleVersioning.Data;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SimpleVersioning.Data;
 using SimpleVersioning.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Testing
 {
@@ -33,6 +35,15 @@ namespace Testing
                 files.Add(new File()
                 {
                     Name = Helper.GetRandomString(5),
+                    ResourceName = Helper.GetRandomString(10),
+                    Properties = new List<FileProperty>()
+                    {
+                            new FileProperty()
+                            {
+                                Name = Helper.GetRandomString(2),
+                                Value = Helper.GetRandomString(2)
+                            }
+                    },
                     Versions = new List<FileVersion>()
                     {
                         new FileVersion()
@@ -42,14 +53,7 @@ namespace Testing
                             Type = "json",
                             Hash = Helper.GetRandomString(5),
                             Version = Helper.GetRandomString(2),
-                            FileProperties = new List<FileProperty>()
-                            {
-                                    new FileProperty()
-                                    {
-                                        Name = Helper.GetRandomString(2),
-                                        Value = Helper.GetRandomString(2)
-                                    }
-                            },
+                           
                             Path = Helper.GetRandomString(5)
 
                         }
@@ -58,13 +62,11 @@ namespace Testing
                 });
             }
         }
-        public static void DeleteAllFiles(this IStorageRepository storageRepo)
+        public static async Task DeleteAllFiles(this IStorageRepositoryAsync storageRepo)
         {
-            List<File> files = storageRepo.GetFiles().ToList();
-
-            foreach (var file in files)
+            await foreach (var file in storageRepo.GetFilesAsync())
             {
-                storageRepo.Delete<File>(file.Id);
+                await storageRepo.DeleteAsync<File>(file.Id);
             }
         }
     }
